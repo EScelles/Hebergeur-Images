@@ -1,117 +1,77 @@
 <?php
-//VERIFIER SI IMAGE BIEN RECU
+    // Ecrivez le code PHP ici
+    if(isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
 
-if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
+        // L'image est trop lourde ?
+        if($_FILES['image']['size'] <= 3000000) {
 
-	//VARIABLE
-	$error = 1;
+            $informationsImage = pathinfo($_FILES['image']['name']);
+            $extensionImage    = $informationsImage['extension'];
+            $extensionsArray   = ['png', 'gif', 'jpg', 'jpeg'];
 
-	//TAILLE
-	if ($_FILES['image']['size'] <= 3000000) {
+            if(in_array($extensionImage, $extensionsArray)) {
 
-		//EXTENSION
-		$informationsImage = pathinfo($_FILES['image']['name']);
+                $newImageName = time().rand().rand().'.'.$extensionImage;
+                move_uploaded_file($_FILES['image']['tmp_name'], 'uploads/'.$newImageName);
+                $send = true;
 
-		$extensionImage = $informationsImage['extension'];
+            }
 
-		$extensionArray = array('jpg', 'png', 'jpeg', 'gif');
+        }
 
-		if (in_array($extensionImage, $extensionArray)) {
-
-			$address = 'uploads/' . time() . rand() . rand();
-			move_uploaded_file($_FILES['image']['tmp_name'], $address);
-
-			$error = 0;
-		}
-	}
-}
+    }
 ?>
 
-<!DOCTYPE html>
-<html lang="fr">
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="css/default.css">
+        <link rel="icon" type="image/png" href="images/favicon.png">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+        <title>ShareFiles - Hébergez gratuitement vos images et en illimité</title>
+    </head>
+    <body>
 
-<head>
-	<meta charset="UTF-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Hébergeur d'Images</title>
-</head>
-<style type="text/css">
-	html,
-	body {
-		margin: 0;
-		font-family: georgia;
-	}
+        <header>
+            <a href="../">
+                <span>ShareFiles</span>
+            </a>
+        </header>
 
-	header {
-		text-align: center;
-		background: blue;
-		color: white;
-	}
+        <section>
+            <h1>
+                <?php
+                    if(isset($send) && $send) {
+                        echo '<img src="uploads/'.$newImageName.'" alt="ShareFiles" style="max-width: 75%">';
+                    }
+                    else {
+                        echo '<i class="fas fa-paper-plane"></i>';
+                    }
+                ?>
+            </h1>
 
-	article {
-		margin-top: 50px;
-		background: #f7f7f7;
-		padding: 10px;
-	}
+            <?php if(isset($send) && $send) { ?>
 
-	button {
-		margin-top: 10px;
-	}
+                <h2>Fichier envoyé avec succès !</h2>
+                <p>Retrouvez ci-dessous le lien vers votre fichier :</p>
+                <input type="text" id="link" value="http://localhost/uploads/<?= $newImageName ?>" readonly>
 
-	h1 {
-		margin-top: 0;
-		text-align: center;
-	}
+            <?php } else { ?>
+            
+                <form method="post" action="index.php" enctype="multipart/form-data">
+                    <p>
+                        <label for="image">Sélectionnez votre fichier</label><br>
+                        <input type="file" name="image" id="image">
+                    </p>
+                    <p id="send">
+                        <button type="submit">Envoyer <i class="fas fa-long-arrow-alt-right"></i></button>
+                    </p>
+                </form>
 
-	#presentation-picture {
-		text-align: center;
-	}
+            <?php } ?>
 
-	#image {
-		max-width: 400px;
-	}
-
-	.contener {
-		width: 1000px;
-		margin: auto;
-		text-align: center;
-	}
-</style>
-
-<body>
-	<header>
-
-		<!-- header -->
-		<h2>PHOTOSHOOT</h2>
-	</header>
-
-	<div class="contener">
-		<article>
-			<h1>Hébergez une image</h1>
-
-			<?php
-			if (isset($error) && $error == 0) {
-
-				echo'<div id="presentation-picture"><img src="' . $address . '" id="image" /><br />
-						<input type="text" value="http://localhost/' . $address . '" />
-					</div>';
-			} 	else if (isset($error) && $error == 1) {
-
-					echo 'Votre image ne peut pas être envoyé, veuillez vérifier son extension et sa taille (maximum 3mo).';
-			}
-			?>
-
-			<form method="post" action="index.php" enctype="multipart/form-data">
-				<p>
-					<input type="file" required name="image" /><br />
-					<div style="text-align: center;">
-						<button type="submit">Héberger</button>
-					</div>
-				</p>
-			</form>
-		</article>
-	</div>
-</body>
-
+            
+        </section>
+        
+    </body>
 </html>
